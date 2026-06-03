@@ -55,6 +55,14 @@ export default function Contact() {
     setStatus('loading')
     setErrorMsg('')
 
+    // Guard: check env vars are loaded
+    if (!EJS_SERVICE || !EJS_TEMPLATE || !EJS_KEY) {
+      setStatus('error')
+      setErrorMsg('Email service not configured. Please contact me directly at pasantharupathi1@gmail.com')
+      setTimeout(() => setStatus('idle'), 6000)
+      return
+    }
+
     try {
       // EmailJS — sends directly from the browser, no backend needed
       await emailjs.send(
@@ -66,8 +74,8 @@ export default function Contact() {
           subject:    form.subject || '(No Subject)',
           message:    form.message,
           reply_to:   form.email,
-        },
-        EJS_KEY
+        }
+        // public key already set via emailjs.init() in main.jsx
       )
 
       setStatus('success')
