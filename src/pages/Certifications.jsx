@@ -31,6 +31,16 @@ const certifications = [
     image: '/java_badge.jpg',
     verifyUrl: 'https://www.linkedin.com/learning/certificates/557075bfbc49cf9fcc2571c0c8ab6c59f25286d516ecc523c60950cb3414e135',
   },
+  {
+    id: 'css-essential',
+    issuer: 'LinkedIn Learning',
+    title: 'CSS Essential Training (2023)',
+    date: 'Jun 03, 2026',
+    credentialId: 'f87b3e21fe52ee0738788097d46515d53b28ff068dfefc2f0969e5919faf3535',
+    skills: ['Cascading Style Sheets (CSS)', 'Web Design', 'Responsive Layouts', 'Web Development'],
+    image: '/css_badge.jpg',
+    verifyUrl: 'https://www.linkedin.com/learning/certificates/f87b3e21fe52ee0738788097d46515d53b28ff068dfefc2f0969e5919faf3535',
+  },
 ]
 
 export default function Certifications() {
