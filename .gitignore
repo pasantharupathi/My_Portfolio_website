@@ -26,3 +26,8 @@ dist-ssr
 # Backend — secrets & database (never commit these)
 server/.env
 server/data/
+
+# EmailJS & other frontend secrets
+.env.local
+.env
+

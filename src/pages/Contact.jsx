@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import emailjs from '@emailjs/browser'
 import { IconGitHub, IconLinkedIn, IconMail } from '../components/Icons'
 
+// ── Contact details ────────────────────────────────────────────────────────────
 const details = [
   { icon: 'MAIL', label: 'Email',    val: 'pasantharupathi1@gmail.com', href: 'mailto:pasantharupathi1@gmail.com' },
   { icon: 'TEL',  label: 'Phone',    val: '+94 75 770 7175',             href: 'tel:+94757707175' },
@@ -15,50 +17,75 @@ const socials = [
 
 const EMPTY_FORM = { name: '', email: '', subject: '', message: '' }
 
+// ── Validation ─────────────────────────────────────────────────────────────────
+function validate(form) {
+  if (!form.name.trim())                         return 'Name is required.'
+  if (!form.email.trim())                        return 'Email is required.'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email address.'
+  if (!form.message.trim())                      return 'Message is required.'
+  return null
+}
+
+// ── EmailJS config (from Vite env vars) ───────────────────────────────────────
+const EJS_SERVICE  = import.meta.env.VITE_EMAILJS_SERVICE_ID
+const EJS_TEMPLATE = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+const EJS_KEY      = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+
 export default function Contact() {
-  const [form, setForm] = useState(EMPTY_FORM)
-  const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
+  const formRef = useRef(null)
+  const [form,    setForm]    = useState(EMPTY_FORM)
+  const [status,  setStatus]  = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('')
 
-  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
+  const handleChange = (e) =>
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    // Client-side validation
+    const validationError = validate(form)
+    if (validationError) {
+      setStatus('error')
+      setErrorMsg(validationError)
+      setTimeout(() => setStatus('idle'), 4000)
+      return
+    }
+
     setStatus('loading')
     setErrorMsg('')
 
     try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-
-      // Safely parse JSON — if server is down it may return HTML
-      let data = {}
-      const contentType = res.headers.get('content-type') || ''
-      if (contentType.includes('application/json')) {
-        data = await res.json()
-      } else {
-        throw new Error('Server is offline. Please try again later.')
-      }
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong. Please try again.')
-      }
+      // EmailJS — sends directly from the browser, no backend needed
+      await emailjs.send(
+        EJS_SERVICE,
+        EJS_TEMPLATE,
+        {
+          from_name:  form.name,
+          from_email: form.email,
+          subject:    form.subject || '(No Subject)',
+          message:    form.message,
+          reply_to:   form.email,
+        },
+        EJS_KEY
+      )
 
       setStatus('success')
       setForm(EMPTY_FORM)
-
-      // Reset to idle after 4 seconds
-      setTimeout(() => setStatus('idle'), 4000)
-    } catch (err) {
-      setStatus('error')
-      setErrorMsg(err.message)
       setTimeout(() => setStatus('idle'), 5000)
+    } catch (err) {
+      console.error('[EmailJS]', err)
+      setStatus('error')
+      setErrorMsg(
+        err?.text === 'The Public Key is invalid'
+          ? 'Email service not configured yet. Please try emailing directly.'
+          : 'Failed to send message. Please try again or email me directly.'
+      )
+      setTimeout(() => setStatus('idle'), 6000)
     }
   }
 
+  // ── Derived UI state ────────────────────────────────────────────────────────
   const isLoading = status === 'loading'
   const isSent    = status === 'success'
   const isError   = status === 'error'
@@ -86,7 +113,8 @@ export default function Contact() {
       </div>
 
       <div className="contact-layout">
-        {/* Left: info */}
+
+        {/* ── Left: info ────────────────────────────────────────────────────── */}
         <div className="contact-left">
           <p className="contact-sub">
             Got a project in mind, a collab idea, or just want to connect?
@@ -110,15 +138,22 @@ export default function Contact() {
 
           <div className="contact-socials">
             {socials.map((s) => (
-              <a key={s.label} className="social-link" href={s.href} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <a
+                key={s.label}
+                className="social-link"
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
                 {s.icon} <span>{s.label}</span>
               </a>
             ))}
           </div>
         </div>
 
-        {/* Right: form */}
-        <form className="contact-form glass-card" onSubmit={handleSubmit}>
+        {/* ── Right: form ───────────────────────────────────────────────────── */}
+        <form ref={formRef} className="contact-form glass-card" onSubmit={handleSubmit} noValidate>
           <div className="form-terminal-header">
             <span style={{ color: 'var(--accent3)' }}>root@pasan</span>
             <span style={{ color: 'var(--muted)' }}>:~/contact$ </span>
@@ -127,28 +162,94 @@ export default function Contact() {
 
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label" htmlFor="name"><span>// </span>Name</label>
-              <input id="name" className="form-input" type="text" name="name" placeholder="Your name" value={form.name} onChange={handleChange} required disabled={isLoading} />
+              <label className="form-label" htmlFor="name">
+                <span>// </span>Name <span style={{ color: '#ff6464' }}>*</span>
+              </label>
+              <input
+                id="name"
+                className="form-input"
+                type="text"
+                name="name"
+                placeholder="Your name"
+                value={form.name}
+                onChange={handleChange}
+                disabled={isLoading}
+                autoComplete="name"
+              />
             </div>
+
             <div className="form-group">
-              <label className="form-label" htmlFor="email"><span>// </span>Email</label>
-              <input id="email" className="form-input" type="email" name="email" placeholder="you@example.com" value={form.email} onChange={handleChange} required disabled={isLoading} />
+              <label className="form-label" htmlFor="email">
+                <span>// </span>Email <span style={{ color: '#ff6464' }}>*</span>
+              </label>
+              <input
+                id="email"
+                className="form-input"
+                type="email"
+                name="email"
+                placeholder="you@example.com"
+                value={form.email}
+                onChange={handleChange}
+                disabled={isLoading}
+                autoComplete="email"
+              />
             </div>
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="subject"><span>// </span>Subject</label>
-            <input id="subject" className="form-input" type="text" name="subject" placeholder="What's this about?" value={form.subject} onChange={handleChange} disabled={isLoading} />
+            <label className="form-label" htmlFor="subject">
+              <span>// </span>Subject
+            </label>
+            <input
+              id="subject"
+              className="form-input"
+              type="text"
+              name="subject"
+              placeholder="What's this about?"
+              value={form.subject}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="message"><span>// </span>Message</label>
-            <textarea id="message" className="form-textarea" name="message" placeholder="Describe your project or idea..." value={form.message} onChange={handleChange} disabled={isLoading} />
+            <label className="form-label" htmlFor="message">
+              <span>// </span>Message <span style={{ color: '#ff6464' }}>*</span>
+            </label>
+            <textarea
+              id="message"
+              className="form-textarea"
+              name="message"
+              placeholder="Describe your project or idea..."
+              value={form.message}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
           </div>
 
+          {/* Validation / error message */}
           {isError && (
-            <p style={{ color: '#ff6464', fontSize: '0.8rem', margin: '0 0 0.5rem', fontFamily: 'monospace' }}>
+            <p style={{
+              color: '#ff6464',
+              fontSize: '0.8rem',
+              margin: '0 0 0.4rem',
+              fontFamily: 'monospace',
+              lineHeight: 1.5,
+            }}>
               ✗ {errorMsg}
+            </p>
+          )}
+
+          {/* Success message */}
+          {isSent && (
+            <p style={{
+              color: 'var(--accent3)',
+              fontSize: '0.8rem',
+              margin: '0 0 0.4rem',
+              fontFamily: 'monospace',
+              lineHeight: 1.5,
+            }}>
+              ✓ Message sent! I'll get back to you within 24–48 hours.
             </p>
           )}
 
@@ -157,7 +258,8 @@ export default function Contact() {
             id="send-btn"
             className="form-btn"
             style={btnStyle}
-            disabled={isLoading}
+            disabled={isLoading || isSent}
+            aria-live="polite"
           >
             {btnLabel}
           </button>
