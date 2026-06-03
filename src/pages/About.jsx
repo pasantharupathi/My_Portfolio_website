@@ -32,7 +32,7 @@ export default function About() {
           </p>
           <p>
             Alongside academic projects, my experience working in professional environments has sharpened my analytical,
-            communication, and problem-solving abilities. I am highly adaptable and seeking a <strong>Software Engineering or Tech Internship</strong>
+            communication, and problem-solving abilities. I am highly adaptable and seeking a <strong>Software Engineering or Tech Internship </strong>
             where I can contribute to building, maintaining, and supporting impact-driven digital platforms.
           </p>
           <br />
