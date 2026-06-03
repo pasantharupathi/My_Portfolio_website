@@ -190,8 +190,15 @@ nav {
   background: rgba(8, 12, 31, 0.98);
   backdrop-filter: blur(24px);
   flex-direction: column;
-  justify-content: center;
+  /* Use flex-start + padding so content is never clipped on short screens */
+  justify-content: flex-start;
   align-items: center;
+  /* Scrollable in case content overflows on very small phones */
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Sit below the navbar */
+  padding-top: calc(var(--nav-height) + 2rem);
+  padding-bottom: 2rem;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -202,18 +209,23 @@ nav {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.8rem;
-  margin-bottom: 3rem;
+  gap: 1.4rem;
+  margin-bottom: 2.5rem;
+  width: 100%;
 }
 .mobile-nav-links a {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 6vw, 2.5rem);
+  font-size: clamp(1.3rem, 5.5vw, 2.2rem);
   color: var(--muted);
   text-decoration: none;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   transition: color 0.2s, transform 0.2s, text-shadow 0.2s;
   display: block;
+  text-align: center;
+  padding: 0.3rem 1rem;
+  min-height: 44px;            /* touch target */
+  line-height: 44px;
 }
 .mobile-nav-links a:hover,
 .mobile-nav-links a.active {
@@ -224,7 +236,7 @@ nav {
 .mobile-menu-footer {
   display: flex;
   gap: 2rem;
-  padding-top: 2rem;
+  padding-top: 1.5rem;
   border-top: 1px solid var(--border);
 }
 .mobile-menu-footer a {
@@ -235,6 +247,9 @@ nav {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   transition: color 0.2s;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 .mobile-menu-footer a:hover { color: var(--accent3); }
 
@@ -1526,6 +1541,12 @@ footer span { color: var(--accent); }
   .about-aside { grid-template-columns: 1fr !important; }
 
   .section-tag { font-size: 0.65rem; }
+
+  /* Mobile nav: tighter so all 8 items fit without clipping */
+  .mobile-menu        { padding-top: calc(var(--nav-height) + 1rem); padding-bottom: 1.2rem; }
+  .mobile-nav-links   { gap: 0.6rem; margin-bottom: 1.5rem; }
+  .mobile-nav-links a { font-size: clamp(1.1rem, 5vw, 1.5rem); min-height: 40px; line-height: 40px; }
+  .mobile-menu-footer { gap: 1.5rem; padding-top: 1rem; }
 }
 
 /* ── 344px: Galaxy Z Fold (folded) ──────────────────────── */
@@ -1544,4 +1565,9 @@ footer span { color: var(--accent); }
   .form-input,
   .form-textarea { padding: 0.65rem 0.8rem; }
   .form-btn      { padding: 0.8rem; letter-spacing: 0.08em; }
+
+  /* Mobile nav: absolute minimum size */
+  .mobile-menu        { padding-top: calc(var(--nav-height) + 0.6rem); }
+  .mobile-nav-links   { gap: 0.4rem; margin-bottom: 1rem; }
+  .mobile-nav-links a { font-size: 1rem; min-height: 36px; line-height: 36px; }
 }
