@@ -34,7 +34,14 @@ export default function Contact() {
         body: JSON.stringify(form),
       })
 
-      const data = await res.json()
+      // Safely parse JSON — if server is down it may return HTML
+      let data = {}
+      const contentType = res.headers.get('content-type') || ''
+      if (contentType.includes('application/json')) {
+        data = await res.json()
+      } else {
+        throw new Error('Server is offline. Please try again later.')
+      }
 
       if (!res.ok) {
         throw new Error(data.error || 'Something went wrong. Please try again.')
