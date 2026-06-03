@@ -4,7 +4,7 @@ import { IconGitHub, IconLinkedIn, IconMail } from '../components/Icons'
 const details = [
   { icon: 'MAIL', label: 'Email',    val: 'pasantharupathi1@gmail.com', href: 'mailto:pasantharupathi1@gmail.com' },
   { icon: 'TEL',  label: 'Phone',    val: '+94 75 770 7175',             href: 'tel:+94757707175' },
-  { icon: 'LOC',  label: 'Location', val: 'Kandy & Colombo, Sri Lanka',            href: null },
+  { icon: 'LOC',  label: 'Location', val: 'Kandy & Colombo, Sri Lanka',  href: null },
 ]
 
 const socials = [
@@ -13,19 +13,62 @@ const socials = [
   { label: 'Email',    icon: <IconMail size={16} />,     href: 'mailto:pasantharupathi1@gmail.com' },
 ]
 
-export default function Contact() {
-  const [sent, setSent] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+const EMPTY_FORM = { name: '', email: '', subject: '', message: '' }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setSent(true)
-    setTimeout(() => {
-      setSent(false)
-      setForm({ name: '', email: '', subject: '', message: '' })
-    }, 3000)
-  }
+export default function Contact() {
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
+  const [errorMsg, setErrorMsg] = useState('')
+
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }))
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setStatus('loading')
+    setErrorMsg('')
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong. Please try again.')
+      }
+
+      setStatus('success')
+      setForm(EMPTY_FORM)
+
+      // Reset to idle after 4 seconds
+      setTimeout(() => setStatus('idle'), 4000)
+    } catch (err) {
+      setStatus('error')
+      setErrorMsg(err.message)
+      setTimeout(() => setStatus('idle'), 5000)
+    }
+  }
+
+  const isLoading = status === 'loading'
+  const isSent    = status === 'success'
+  const isError   = status === 'error'
+
+  const btnStyle = isSent
+    ? { background: 'rgba(168,216,151,0.2)', color: 'var(--accent3)', borderColor: 'var(--accent3)' }
+    : isError
+    ? { background: 'rgba(255,100,100,0.15)', color: '#ff6464', borderColor: '#ff6464' }
+    : {}
+
+  const btnLabel = isSent
+    ? '✓ MESSAGE_SENT'
+    : isError
+    ? '✗ FAILED — RETRY'
+    : isLoading
+    ? '⟳ SENDING...'
+    : '> SEND_MESSAGE'
 
   return (
     <section id="contact" className="page-section contact-page">
@@ -78,31 +121,38 @@ export default function Contact() {
           <div className="form-row">
             <div className="form-group">
               <label className="form-label" htmlFor="name"><span>// </span>Name</label>
-              <input id="name" className="form-input" type="text" name="name" placeholder="Your name" value={form.name} onChange={handleChange} required />
+              <input id="name" className="form-input" type="text" name="name" placeholder="Your name" value={form.name} onChange={handleChange} required disabled={isLoading} />
             </div>
             <div className="form-group">
               <label className="form-label" htmlFor="email"><span>// </span>Email</label>
-              <input id="email" className="form-input" type="email" name="email" placeholder="you@example.com" value={form.email} onChange={handleChange} required />
+              <input id="email" className="form-input" type="email" name="email" placeholder="you@example.com" value={form.email} onChange={handleChange} required disabled={isLoading} />
             </div>
           </div>
 
           <div className="form-group">
             <label className="form-label" htmlFor="subject"><span>// </span>Subject</label>
-            <input id="subject" className="form-input" type="text" name="subject" placeholder="What's this about?" value={form.subject} onChange={handleChange} />
+            <input id="subject" className="form-input" type="text" name="subject" placeholder="What's this about?" value={form.subject} onChange={handleChange} disabled={isLoading} />
           </div>
 
           <div className="form-group">
             <label className="form-label" htmlFor="message"><span>// </span>Message</label>
-            <textarea id="message" className="form-textarea" name="message" placeholder="Describe your project or idea..." value={form.message} onChange={handleChange} />
+            <textarea id="message" className="form-textarea" name="message" placeholder="Describe your project or idea..." value={form.message} onChange={handleChange} disabled={isLoading} />
           </div>
+
+          {isError && (
+            <p style={{ color: '#ff6464', fontSize: '0.8rem', margin: '0 0 0.5rem', fontFamily: 'monospace' }}>
+              ✗ {errorMsg}
+            </p>
+          )}
 
           <button
             type="submit"
             id="send-btn"
             className="form-btn"
-            style={sent ? { background: 'rgba(168,216,151,0.2)', color: 'var(--accent3)', borderColor: 'var(--accent3)' } : {}}
+            style={btnStyle}
+            disabled={isLoading}
           >
-            {sent ? '✓ MESSAGE_SENT' : '> SEND_MESSAGE'}
+            {btnLabel}
           </button>
         </form>
       </div>
