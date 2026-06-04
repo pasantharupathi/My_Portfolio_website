@@ -1,0 +1,26 @@
+# render.yaml — Render Blueprint for automatic deployment
+# Place this in the root of your GitHub repo
+# See: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: portfolio-backend
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: EMAIL_USER
+        sync: false    # Set manually in Render dashboard
+      - key: EMAIL_PASS
+        sync: false    # Set manually in Render dashboard
+      - key: NOTIFY_EMAIL
+        sync: false
+      - key: CLIENT_URL
+        sync: false    # Your Vercel frontend URL
+      - key: GITHUB_USERNAME
+        value: pasantharupathi
+      - key: GITHUB_TOKEN
+        sync: false    # Optional

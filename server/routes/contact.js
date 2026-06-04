@@ -1,4 +1,14 @@
-// routes/contact.js — Contact form endpoint
+// routes/contact.js — Contact form API endpoint
+// ═══════════════════════════════════════════════
+// POST /api/contact
+//
+// Accepts: { name, email, subject, message }
+// Returns: { success: true, message: '...' }  on success
+//          { error: '...' }                   on failure
+//
+// Emails are sent via Gmail SMTP using Nodemailer.
+// Messages are also saved to a local JSON file as backup.
+
 const express = require('express')
 const nodemailer = require('nodemailer')
 const rateLimit = require('express-rate-limit')
@@ -11,27 +21,50 @@ const router = express.Router()
 const contactLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: { error: 'Too many messages sent. Please try again later.' },
+  message: { error: 'Too many messages sent. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
 })
 
-// ── Nodemailer transporter ────────────────────────────────────────────────────
+// ── Nodemailer transporter (Gmail SMTP) ──────────────────────────────────────
+//
+// Uses EMAIL_USER and EMAIL_PASS from environment variables.
+// EMAIL_PASS must be a Gmail App Password (not your regular password).
+//
+// To create a Gmail App Password:
+//   1. Go to https://myaccount.google.com/security
+//   2. Enable 2-Step Verification
+//   3. Go to https://myaccount.google.com/apppasswords
+//   4. Generate a new App Password for "Mail"
+//   5. Copy the 16-character password into EMAIL_PASS
+//
 const createTransporter = () =>
   nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   })
 
 // ── Validation rules ──────────────────────────────────────────────────────────
 const validateContact = [
-  body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 100 }),
-  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
-  body('subject').trim().optional().isLength({ max: 200 }),
-  body('message').trim().notEmpty().withMessage('Message is required').isLength({ max: 5000 }),
+  body('name')
+    .trim()
+    .notEmpty().withMessage('Name is required')
+    .isLength({ max: 100 }).withMessage('Name must be under 100 characters'),
+  body('email')
+    .trim()
+    .isEmail().withMessage('Valid email address is required')
+    .normalizeEmail(),
+  body('subject')
+    .trim()
+    .optional()
+    .isLength({ max: 200 }).withMessage('Subject must be under 200 characters'),
+  body('message')
+    .trim()
+    .notEmpty().withMessage('Message is required')
+    .isLength({ max: 5000 }).withMessage('Message must be under 5000 characters'),
 ]
 
 // ── POST /api/contact ─────────────────────────────────────────────────────────
@@ -47,18 +80,24 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
   const userAgent = req.headers['user-agent'] || ''
 
   try {
-    // 2. Save to JSON store
+    // 2. Save to JSON store (backup — works even if email fails)
     insertMessage({ name, email, subject: subject || '', message, ip, userAgent })
+    console.log(`[Contact] Message saved from ${name} <${email}>`)
 
     // 3. Send email notification (if credentials are configured)
-    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD &&
-        process.env.GMAIL_USER !== 'your_email@gmail.com') {
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS &&
+        process.env.EMAIL_PASS !== 'xxxx_xxxx_xxxx_xxxx') {
+
       const transporter = createTransporter()
 
-      // Notification email to you
+      // Verify SMTP connection before sending
+      await transporter.verify()
+
+      // Notification email → you
       await transporter.sendMail({
-        from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`,
-        to: process.env.NOTIFY_EMAIL || process.env.GMAIL_USER,
+        from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
+        to: process.env.NOTIFY_EMAIL || process.env.EMAIL_USER,
+        replyTo: email,
         subject: `📬 New Contact: ${subject || '(no subject)'} — from ${name}`,
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:auto;background:#0d1117;color:#c9d1d9;padding:24px;border-radius:12px;border:1px solid #30363d">
@@ -76,9 +115,9 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
         `,
       })
 
-      // Auto-reply to the sender
+      // Auto-reply → the sender
       await transporter.sendMail({
-        from: `"Pasan Tharupathi" <${process.env.GMAIL_USER}>`,
+        from: `"Pasan Tharupathi" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: `Thanks for reaching out, ${name.split(' ')[0]}! 👋`,
         html: `
@@ -97,14 +136,21 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
           </div>
         `,
       })
+
+      console.log(`[Contact] Emails sent successfully to ${email}`)
     } else {
-      console.log('[Contact] Email not configured — skipping email send. Message saved to DB.')
+      console.log('[Contact] Email not configured — message saved to JSON store only.')
     }
 
-    return res.status(200).json({ success: true, message: 'Message received!' })
+    return res.status(200).json({
+      success: true,
+      message: 'Message sent successfully! I\'ll get back to you within 24–48 hours.',
+    })
   } catch (err) {
     console.error('[Contact] Error:', err.message)
-    return res.status(500).json({ error: 'Failed to send message. Please try again.' })
+    return res.status(500).json({
+      error: 'Failed to send message. Please try again or email me directly at pasantharupathi1@gmail.com',
+    })
   }
 })
 

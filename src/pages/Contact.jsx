@@ -1,40 +1,39 @@
 import { useState, useRef } from 'react'
-import emailjs from '@emailjs/browser'
 import { IconGitHub, IconLinkedIn, IconMail } from '../components/Icons'
 
 // ── Contact details ────────────────────────────────────────────────────────────
 const details = [
-  { icon: 'MAIL', label: 'Email',    val: 'pasantharupathi1@gmail.com', href: 'mailto:pasantharupathi1@gmail.com' },
-  { icon: 'TEL',  label: 'Phone',    val: '+94 75 770 7175',             href: 'tel:+94757707175' },
-  { icon: 'LOC',  label: 'Location', val: 'Kandy & Colombo, Sri Lanka',  href: null },
+  { icon: 'MAIL', label: 'Email', val: 'pasantharupathi1@gmail.com', href: 'mailto:pasantharupathi1@gmail.com' },
+  { icon: 'TEL', label: 'Phone', val: '+94 75 770 7175', href: 'tel:+94757707175' },
+  { icon: 'LOC', label: 'Location', val: 'Kandy & Colombo, Sri Lanka', href: null },
 ]
 
 const socials = [
-  { label: 'GitHub',   icon: <IconGitHub size={16} />,   href: 'https://github.com/pasantharupathi' },
+  { label: 'GitHub', icon: <IconGitHub size={16} />, href: 'https://github.com/pasantharupathi' },
   { label: 'LinkedIn', icon: <IconLinkedIn size={16} />, href: 'https://www.linkedin.com/in/pasan-tharupathi/' },
-  { label: 'Email',    icon: <IconMail size={16} />,     href: 'mailto:pasantharupathi1@gmail.com' },
+  { label: 'Email', icon: <IconMail size={16} />, href: 'mailto:pasantharupathi1@gmail.com' },
 ]
 
 const EMPTY_FORM = { name: '', email: '', subject: '', message: '' }
 
 // ── Validation ─────────────────────────────────────────────────────────────────
 function validate(form) {
-  if (!form.name.trim())                         return 'Name is required.'
-  if (!form.email.trim())                        return 'Email is required.'
+  if (!form.name.trim()) return 'Name is required.'
+  if (!form.email.trim()) return 'Email is required.'
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email address.'
-  if (!form.message.trim())                      return 'Message is required.'
+  if (!form.message.trim()) return 'Message is required.'
   return null
 }
 
-// ── EmailJS config (from Vite env vars) ───────────────────────────────────────
-const EJS_SERVICE  = import.meta.env.VITE_EMAILJS_SERVICE_ID
-const EJS_TEMPLATE = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
-const EJS_KEY      = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+// ── API URL ────────────────────────────────────────────────────────────────────
+// In development: Vite proxy handles /api → localhost:5000
+// In production: Set VITE_API_URL to your Render backend URL (e.g., https://your-backend.onrender.com)
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 export default function Contact() {
   const formRef = useRef(null)
-  const [form,    setForm]    = useState(EMPTY_FORM)
-  const [status,  setStatus]  = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('')
 
   const handleChange = (e) =>
@@ -55,62 +54,61 @@ export default function Contact() {
     setStatus('loading')
     setErrorMsg('')
 
-    // Guard: check env vars are loaded
-    if (!EJS_SERVICE || !EJS_TEMPLATE || !EJS_KEY) {
-      setStatus('error')
-      setErrorMsg('Email service not configured. Please contact me directly at pasantharupathi1@gmail.com')
-      setTimeout(() => setStatus('idle'), 6000)
-      return
-    }
-
     try {
-      // EmailJS — sends directly from the browser, no backend needed
-      await emailjs.send(
-        EJS_SERVICE,
-        EJS_TEMPLATE,
-        {
-          from_name:  form.name,
-          from_email: form.email,
-          subject:    form.subject || '(No Subject)',
-          message:    form.message,
-          reply_to:   form.email,
-        }
-        // public key already set via emailjs.init() in main.jsx
-      )
+      // Send POST request to backend API
+      const response = await fetch(`${API_URL}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          subject: form.subject.trim() || '(No Subject)',
+          message: form.message.trim(),
+        }),
+      })
 
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message')
+      }
+
+      // Success!
       setStatus('success')
       setForm(EMPTY_FORM)
       setTimeout(() => setStatus('idle'), 5000)
-    } catch (err) {
-      console.error('[EmailJS]', err)
+    } catch (error) {
+      console.error('[Contact Form Error]:', error)
       setStatus('error')
-      setErrorMsg(
-        err?.text === 'The Public Key is invalid'
-          ? 'Email service not configured yet. Please try emailing directly.'
-          : 'Failed to send message. Please try again or email me directly.'
-      )
+
+      if (error.message === 'Failed to fetch') {
+        setErrorMsg('Cannot reach the server. Please try again later or email me directly.')
+      } else {
+        setErrorMsg(error.message || 'Failed to send message. Please try again or email me directly.')
+      }
+
       setTimeout(() => setStatus('idle'), 6000)
     }
   }
 
   // ── Derived UI state ────────────────────────────────────────────────────────
   const isLoading = status === 'loading'
-  const isSent    = status === 'success'
-  const isError   = status === 'error'
+  const isSent = status === 'success'
+  const isError = status === 'error'
 
   const btnStyle = isSent
     ? { background: 'rgba(168,216,151,0.2)', color: 'var(--accent3)', borderColor: 'var(--accent3)' }
     : isError
-    ? { background: 'rgba(255,100,100,0.15)', color: '#ff6464', borderColor: '#ff6464' }
-    : {}
+      ? { background: 'rgba(255,100,100,0.15)', color: '#ff6464', borderColor: '#ff6464' }
+      : {}
 
   const btnLabel = isSent
     ? '✓ MESSAGE_SENT'
     : isError
-    ? '✗ FAILED — RETRY'
-    : isLoading
-    ? '⟳ SENDING...'
-    : '> SEND_MESSAGE'
+      ? '✗ FAILED — RETRY'
+      : isLoading
+        ? '⟳ SENDING...'
+        : '> SEND_MESSAGE'
 
   return (
     <section id="contact" className="page-section contact-page">
