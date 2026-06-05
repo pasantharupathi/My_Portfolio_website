@@ -62,7 +62,7 @@ export default function Nav() {
             </li>
           ))}
           <li>
-            <a href="/Pasan_Tharupathi_CV.pdf" download style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent3)' }}>
+            <a href="https://drive.google.com/file/d/1hOQFMYiAg3IZj5yySMKyoI6lmkOpOSa8/view?usp=sharing" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent3)' }}>
               <IconDownload size={14} /> CV
             </a>
           </li>
@@ -95,7 +95,7 @@ export default function Nav() {
           ))}
         </ul>
         <div className="mobile-menu-footer">
-          <a href="/Pasan_Tharupathi_CV.pdf" download style={{ color: 'var(--accent3)' }}>
+          <a href="https://drive.google.com/file/d/1hOQFMYiAg3IZj5yySMKyoI6lmkOpOSa8/view?usp=sharing" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent3)' }}>
             <IconDownload size={16} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> CV
           </a>
           <a href="https://github.com/pasantharupathi" target="_blank" rel="noopener noreferrer">GitHub</a>

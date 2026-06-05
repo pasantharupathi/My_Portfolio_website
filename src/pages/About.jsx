@@ -44,7 +44,7 @@ export default function About() {
             <a href="#contact" className="btn btn-outline">
               <span>./</span> Get In Touch
             </a>
-            <a href="/Pasan_Tharupathi_CV.pdf" className="btn btn-outline" download>
+            <a href="https://drive.google.com/file/d/1hOQFMYiAg3IZj5yySMKyoI6lmkOpOSa8/view?usp=sharing" target="_blank" rel="noopener noreferrer" className="btn btn-outline">
               <IconDownload size={16} style={{ marginRight: '6px' }} /> Download CV
             </a>
           </div>
