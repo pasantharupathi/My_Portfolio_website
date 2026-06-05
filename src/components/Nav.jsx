@@ -10,18 +10,44 @@ export default function Nav() {
 
   // Scroll spy — highlight nav based on which section is in view
   useEffect(() => {
-    const sections = document.querySelectorAll('section[id]')
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setActive(entry.target.id)
-        })
-      },
-      { threshold: 0.2, rootMargin: '-70px 0px 0px 0px' }
-    )
-    sections.forEach((s) => observer.observe(s))
-    return () => observer.disconnect()
-  }, [])
+    let observer = null;
+    let lastObservedIds = '';
+
+    const initObserver = () => {
+      const sections = document.querySelectorAll('section[id]');
+      const currentIds = Array.from(sections).map(s => s.id).join(',');
+      
+      if (currentIds === lastObservedIds) return;
+      lastObservedIds = currentIds;
+
+      if (observer) observer.disconnect();
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) setActive(entry.target.id);
+          });
+        },
+        { threshold: 0.2, rootMargin: '-70px 0px 0px 0px' }
+      );
+
+      sections.forEach((s) => observer.observe(s));
+    };
+
+    initObserver();
+
+    // Re-run when lazy components mount
+    const mutationObserver = new MutationObserver(() => {
+      initObserver();
+    });
+    
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      if (observer) observer.disconnect();
+      mutationObserver.disconnect();
+    };
+  }, []);
 
   // Nav shadow on scroll
   useEffect(() => {
