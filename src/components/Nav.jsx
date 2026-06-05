@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { IconDownload } from './Icons'
 
 const navItems = ['home', 'about', 'experience', 'education', 'certifications', 'projects', 'skills', 'contact']
 
@@ -60,6 +61,11 @@ export default function Nav() {
               </a>
             </li>
           ))}
+          <li>
+            <a href="/Pasan_Tharupathi_CV.pdf" download style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--accent3)' }}>
+              <IconDownload size={14} /> CV
+            </a>
+          </li>
         </ul>
 
         {/* Hamburger */}
@@ -89,6 +95,9 @@ export default function Nav() {
           ))}
         </ul>
         <div className="mobile-menu-footer">
+          <a href="/Pasan_Tharupathi_CV.pdf" download style={{ color: 'var(--accent3)' }}>
+            <IconDownload size={16} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> CV
+          </a>
           <a href="https://github.com/pasantharupathi" target="_blank" rel="noopener noreferrer">GitHub</a>
           <a href="https://www.linkedin.com/in/pasan-tharupathi/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
         </div>
