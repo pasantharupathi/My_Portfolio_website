@@ -40,11 +40,16 @@ const contactLimiter = rateLimit({
 //
 const createTransporter = () =>
   nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    connectionTimeout: 60000,
+    greetingTimeout: 60000,
+    socketTimeout: 60000,
   })
 
 // ── Validation rules ──────────────────────────────────────────────────────────
@@ -86,12 +91,12 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
 
     // 3. Send email notification (if credentials are configured)
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS &&
-        process.env.EMAIL_PASS !== 'xxxx_xxxx_xxxx_xxxx') {
+      process.env.EMAIL_PASS !== 'xxxx_xxxx_xxxx_xxxx') {
 
       const transporter = createTransporter()
 
       // Verify SMTP connection before sending
-      await transporter.verify()
+      //await transporter.verify()
 
       // Notification email → you
       await transporter.sendMail({
@@ -147,9 +152,15 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
       message: 'Message sent successfully! I\'ll get back to you within 24–48 hours.',
     })
   } catch (err) {
-    console.error('[Contact] Error:', err.message)
+    console.error('========== CONTACT ERROR ==========')
+    console.error(err)
+    console.error('MESSAGE:', err.message)
+    console.error('CODE:', err.code)
+    console.error('COMMAND:', err.command)
+    console.error('===================================')
+
     return res.status(500).json({
-      error: 'Failed to send message. Please try again or email me directly at pasantharupathi1@gmail.com',
+      error: err.message || 'Email failed',
     })
   }
 })
