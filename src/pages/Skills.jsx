@@ -38,19 +38,6 @@ const panels = [
       'Postman & API Testing',
     ],
   },
-  {
-    title: '[ DOMAINS & CONCEPTS ]',
-    icon: '◇',
-    sector: 'SEC_04',
-    core: 'SYS_COGNITIVE',
-    skills: [
-      'IoT Systems & GPS Tracking',
-      'Cybersecurity Awareness',
-      'OOP & Clean Architecture',
-      'Agile & Scrum',
-      'Analytical Problem Solving',
-    ],
-  },
 ]
 
 export default function Skills() {
