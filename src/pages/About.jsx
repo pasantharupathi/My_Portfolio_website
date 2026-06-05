@@ -1,3 +1,5 @@
+import { IconDownload } from '../components/Icons'
+
 const info = [
   { label: 'Location',     val: 'Kandy & Colombo, Sri Lanka' },
   { label: 'Education',    val: 'BSc (Hons) CS — Westminster / IIT' },
@@ -38,9 +40,14 @@ export default function About() {
             digital platforms.
           </p>
           <br />
-          <a href="#contact" className="btn btn-outline">
-            <span>./</span> Get In Touch
-          </a>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <a href="#contact" className="btn btn-outline">
+              <span>./</span> Get In Touch
+            </a>
+            <a href="/Pasan_Tharupathi_CV.pdf" className="btn btn-outline" download>
+              <IconDownload size={16} style={{ marginRight: '6px' }} /> Download CV
+            </a>
+          </div>
         </div>
 
         <div className="about-aside">

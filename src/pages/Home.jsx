@@ -1,4 +1,5 @@
 import { IconGitHub, IconLinkedIn, IconMail } from '../components/Icons'
+import { IconDownload } from '../components/Icons'
 import { useTypewriter } from '../hooks/useTypewriter'
 
 const roles = [
@@ -46,6 +47,9 @@ export default function Home() {
         <div className="hero-ctas anim-5">
           <a href="#projects" className="btn btn-primary">
             <span style={{ color: 'var(--accent3)' }}>&gt;</span> View Projects
+          </a>
+          <a href="/Pasan_Tharupathi_CV.pdf" className="btn btn-outline" download>
+            <IconDownload size={16} style={{ marginRight: '6px' }} /> Download CV
           </a>
           <a href="#contact" className="btn btn-outline">
             <span>./</span> Contact Me
