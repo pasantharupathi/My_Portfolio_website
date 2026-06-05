@@ -12,8 +12,8 @@
                                                         │
                                                         ▼
                                                   ┌──────────────┐
-                                                  │ Gmail SMTP   │
-                                                  │ (Nodemailer) │
+                                                  │    Resend    │
+                                                  │  (Email API) │
                                                   └──────────────┘
 ```
 
@@ -30,15 +30,13 @@ npm install
 ### 2. Configure environment
 ```bash
 cp .env.example .env
-# Edit .env with your Gmail credentials
+# Edit .env — set RESEND_API_KEY and EMAIL_USER
 ```
 
-### 3. Create a Gmail App Password
-1. Go to [Google Account Security](https://myaccount.google.com/security)
-2. Enable **2-Step Verification**
-3. Go to [App Passwords](https://myaccount.google.com/apppasswords)
-4. Select **Mail** → **Other** → Name it "Portfolio"
-5. Copy the 16-character password into `EMAIL_PASS` in `.env`
+### 3. Get a Resend API Key
+1. Sign up at [resend.com](https://resend.com)
+2. Go to **API Keys** → **Create API Key**
+3. Copy the key and paste it into `RESEND_API_KEY` in `.env`
 
 ### 4. Start the server
 ```bash
@@ -47,7 +45,7 @@ npm run dev     # with auto-reload (nodemon)
 npm start       # production mode
 ```
 
-Server runs at `http://localhost:3001`
+Server runs at `http://localhost:5000`
 
 ---
 
@@ -73,12 +71,11 @@ In the Render dashboard → **Environment** tab, add:
 | Variable | Value |
 |----------|-------|
 | `NODE_ENV` | `production` |
-| `EMAIL_USER` | `pasantharupathi1@gmail.com` |
-| `EMAIL_PASS` | `(your Gmail App Password)` |
-| `NOTIFY_EMAIL` | `pasantharupathi1@gmail.com` |
+| `RESEND_API_KEY` | `(your Resend API key)` |
+| `EMAIL_USER` | `your@email.com` |
 | `CLIENT_URL` | `https://your-portfolio.vercel.app` |
 | `GITHUB_USERNAME` | `pasantharupathi` |
-| `GITHUB_TOKEN` | `(optional - for higher rate limits)` |
+| `GITHUB_TOKEN` | `(optional — for higher rate limits)` |
 
 ### Step 4: Deploy
 Click **Create Web Service**. Render will build and deploy automatically.
@@ -98,6 +95,7 @@ Your backend URL will be: `https://portfolio-backend.onrender.com`
 |--------|----------|-------------|
 | `POST` | `/api/contact` | Send contact form message |
 | `GET` | `/api/github/stats` | Fetch GitHub profile stats |
+| `GET` | `/api/github/repos` | Fetch top repos (uses shared cache) |
 | `GET` | `/api/health` | Health check |
 
 ### POST /api/contact
@@ -111,18 +109,30 @@ Your backend URL will be: `https://portfolio-backend.onrender.com`
 }
 
 // Success response (200)
-{ "success": true, "message": "Message sent successfully!" }
+{ "success": true, "message": "Message sent successfully! I'll get back to you within 24–48 hours." }
 
 // Validation error (422)
 { "error": "Name is required" }
 
+// Rate limit error (429)
+{ "error": "Too many messages sent. Please try again in 15 minutes." }
+
 // Server error (500)
-{ "error": "Failed to send message. Please try again." }
+{ "error": "Failed to send message. Please try again later or contact me directly." }
 ```
 
 ---
 
+## Security Features
+
+- **Rate limiting**: 5 contact form submissions per IP per 15 minutes (global: 100 req / 15 min)
+- **Input validation**: `express-validator` validates all contact form fields server-side
+- **HTML sanitisation**: User inputs are HTML-escaped before injection into email templates
+- **CORS**: Restricted to allowed frontend origins only
+- **Body size limit**: 10kb maximum request body
+
+---
+
 ## Notes
-- **Free Render tier**: Server sleeps after 15 min of inactivity. First request takes ~30s to wake up.
-- **Rate limiting**: 5 contact form submissions per IP per 15 minutes.
-- **Messages backup**: All messages are saved to `server/data/messages.json` even if email fails.
+- **Free Render tier**: Server sleeps after 15 min of inactivity. First request may take ~30s to wake up.
+- **Messages backup**: All contact form submissions are saved to `server/data/messages.json` even if the email service is unavailable. This directory is excluded from Git via `.gitignore`.

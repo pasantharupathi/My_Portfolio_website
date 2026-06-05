@@ -8,6 +8,18 @@ const router = express.Router()
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+// ── HTML sanitiser ────────────────────────────────────────────────────────────
+// Escapes characters that have special meaning in HTML to prevent email
+// injection or XSS via the contact form template.
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 // ── Rate limiter ──────────────────────────────────────────────────────────────
 const contactLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -65,6 +77,13 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
 
   const userAgent = req.headers['user-agent'] || ''
 
+  // Sanitise user inputs before injecting into email HTML
+  const safeName    = escapeHtml(name)
+  const safeEmail   = escapeHtml(email)
+  const safeSubject = escapeHtml(subject || '(No Subject)')
+  const safeMessage = escapeHtml(message)
+  const safeIp      = escapeHtml(ip)
+
   try {
     // Save backup locally
     insertMessage({
@@ -85,24 +104,22 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
         from: 'Portfolio Contact <onboarding@resend.dev>',
         to: process.env.EMAIL_USER,
         replyTo: email,
-        subject: `📬 New Contact: ${subject || '(No Subject)'}`,
+        subject: `📬 New Contact: ${safeSubject}`,
         html: `
-          <div style="font-family:Arial,sans-serif;padding:20px">
-            <h2>New Portfolio Contact Message</h2>
+          <div style="font-family:Arial,sans-serif;padding:20px;max-width:600px">
+            <h2 style="color:#333">New Portfolio Contact Message</h2>
 
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject || '(No Subject)'}</p>
+            <p><strong>Name:</strong> ${safeName}</p>
+            <p><strong>Email:</strong> ${safeEmail}</p>
+            <p><strong>Subject:</strong> ${safeSubject}</p>
 
-            <hr>
+            <hr style="border:none;border-top:1px solid #eee;margin:16px 0" />
 
-            <p style="white-space:pre-wrap">${message}</p>
+            <p style="white-space:pre-wrap;background:#f9f9f9;padding:12px;border-radius:4px">${safeMessage}</p>
 
-            <hr>
+            <hr style="border:none;border-top:1px solid #eee;margin:16px 0" />
 
-            <small>
-              IP: ${ip}
-            </small>
+            <small style="color:#999">Sender IP: ${safeIp}</small>
           </div>
         `,
       })
@@ -111,11 +128,11 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
       await resend.emails.send({
         from: 'Pasan Portfolio <onboarding@resend.dev>',
         to: email,
-        subject: `Thanks for reaching out, ${name}!`,
+        subject: `Thanks for reaching out, ${safeName}!`,
         html: `
-          <div style="font-family:Arial,sans-serif;padding:20px">
+          <div style="font-family:Arial,sans-serif;padding:20px;max-width:600px">
 
-            <h2>Hello ${name}, 👋</h2>
+            <h2 style="color:#333">Hello ${safeName} 👋</h2>
 
             <p>
               Thank you for contacting me through my portfolio website.
@@ -126,15 +143,15 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
               as soon as possible.
             </p>
 
-            <hr>
+            <hr style="border:none;border-top:1px solid #eee;margin:16px 0" />
 
-            <h3>Your Message</h3>
+            <h3 style="color:#555">Your Message</h3>
 
-            <p style="white-space:pre-wrap">
-              ${message}
+            <p style="white-space:pre-wrap;background:#f9f9f9;padding:12px;border-radius:4px">
+              ${safeMessage}
             </p>
 
-            <hr>
+            <hr style="border:none;border-top:1px solid #eee;margin:16px 0" />
 
             <p>
               Regards,<br/>
@@ -145,29 +162,20 @@ router.post('/', contactLimiter, validateContact, async (req, res) => {
         `,
       })
 
-      console.log(
-        `[Contact] Emails sent successfully to ${email}`
-      )
+      console.log(`[Contact] Emails sent successfully to ${email}`)
     } else {
-      console.log(
-        '[Contact] RESEND_API_KEY not configured. Message saved only.'
-      )
+      console.log('[Contact] RESEND_API_KEY not configured. Message saved only.')
     }
 
     return res.status(200).json({
       success: true,
-      message:
-        "Message sent successfully! I'll get back to you within 24–48 hours.",
+      message: "Message sent successfully! I'll get back to you within 24–48 hours.",
     })
   } catch (err) {
-    console.error('========== CONTACT ERROR ==========')
-    console.error(err)
-    console.error('MESSAGE:', err.message)
-    console.error('===================================')
+    console.error('[Contact] Error sending message:', err.message)
 
     return res.status(500).json({
-      error:
-        'Failed to send message. Please try again later or contact me directly.',
+      error: 'Failed to send message. Please try again later or contact me directly.',
     })
   }
 })

@@ -1,10 +1,10 @@
 const info = [
-  { label: 'Location', val: 'Kandy & Colombo, Sri Lanka' },
-  { label: 'Education', val: 'BSc (Hons) CS — Westminster / IIT' },
+  { label: 'Location',     val: 'Kandy & Colombo, Sri Lanka' },
+  { label: 'Education',    val: 'BSc (Hons) CS — Westminster / IIT' },
   { label: 'Availability', val: 'Open to internships & collabs', accent: true },
-  { label: 'Focus', val: 'Full Stack · Mobile Dev · Java · Python' },
-  { label: 'Languages', val: 'English · Sinhala' },
-  { label: 'School', val: 'Kingswood College, Kandy' },
+  { label: 'Focus',        val: 'Full Stack · IoT · Cybersecurity · Mobile' },
+  { label: 'Languages',    val: 'English · Sinhala' },
+  { label: 'School',       val: 'Kingswood College, Kandy' },
 ]
 
 export default function About() {
@@ -22,18 +22,20 @@ export default function About() {
             I am a second-year Computer Science undergraduate at <strong>IIT (Informatics Institute of Technology)</strong>,
             affiliated with the <strong>University of Westminster</strong>. My academic journey started at
             <strong> Kingswood College, Kandy</strong>, and has evolved into a deep interest in software systems,
-            database management, and building functional digital solutions.
+            IoT integration, cybersecurity, and building functional digital solutions.
           </p>
           <p>
             I have hands-on experience developing diverse technical systems. These include <strong>KidCloud</strong>,
-            a smart child-safety tracking system combining IoT with Flutter and FastAPI, <strong>Propify</strong>,
-            a responsive React real-estate web application, and <strong>SmartCampusAPI</strong>, a Jersey-based Java
-            RESTful API. I enjoy bridging backend APIs with intuitive user experiences.
+            a smart child-safety tracking system combining IoT hardware with Flutter and FastAPI;{' '}
+            <strong>Propify</strong>, a responsive React real-estate web application; and{' '}
+            <strong>SmartCampusAPI</strong>, a Jersey-based Java RESTful API. I enjoy bridging backend APIs
+            with intuitive user experiences and exploring the intersection of hardware and software.
           </p>
           <p>
-            Alongside academic projects, my experience working in professional environments has sharpened my analytical,
-            communication, and problem-solving abilities. I am highly adaptable and seeking a <strong>Software Engineering or Tech Internship </strong>
-            where I can contribute to building, maintaining, and supporting impact-driven digital platforms.
+            Beyond academics, I am actively developing my understanding of cybersecurity principles and cloud
+            deployment practices. I am highly adaptable and seeking a <strong>Software Engineering or Tech
+            Internship</strong> where I can contribute to building, maintaining, and scaling impact-driven
+            digital platforms.
           </p>
           <br />
           <a href="#contact" className="btn btn-outline">

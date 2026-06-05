@@ -127,13 +127,13 @@ function startServer(port, retries = 3) {
     console.log(`   └─ GET  /api/health        → health check`)
     console.log('')
 
-    // Email config check
-    if (!process.env.EMAIL_USER || process.env.EMAIL_PASS === 'xxxx_xxxx_xxxx_xxxx') {
-      console.log('   ⚠️  Email not configured.')
-      console.log('   Edit server/.env → set EMAIL_USER and EMAIL_PASS')
-      console.log('   See server/.env.example for Gmail App Password instructions.')
+    // Resend config check
+    if (!process.env.RESEND_API_KEY) {
+      console.log('   ⚠️  Resend not configured.')
+      console.log('   Edit server/.env → set RESEND_API_KEY')
+      console.log('   See server/.env.example for setup instructions.')
     } else {
-      console.log(`   ✅ Email configured: ${process.env.EMAIL_USER}`)
+      console.log(`   ✅ Resend configured → emails routing to ${process.env.EMAIL_USER || '(EMAIL_USER not set)'}`)
     }
 
     // CORS origins

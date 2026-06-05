@@ -5,7 +5,8 @@ const roles = [
   'CS Undergraduate',
   'Full Stack Developer',
   'Software Engineer Intern',
-  'Mobile & Web Developer',
+  'Mobile & IoT Developer',
+  'Cybersecurity Enthusiast',
 ]
 
 export default function Home() {
@@ -31,13 +32,15 @@ export default function Home() {
         </h1>
 
         <div className="hero-role anim-3">
-          <span style={{ color: 'var(--muted)' }}>{'> '}</span>
+          <span style={{ color: 'var(--muted)' }}>{' > '}</span>
           {role}
           <span className="type-cursor" />
         </div>
 
         <p className="hero-sub anim-4">
-          Second-year Computer Science undergraduate at IIT (affiliated with the University of Westminster). Passionate about software engineering, web & mobile development, and building impact-driven tech solutions.
+          Second-year Computer Science undergraduate at IIT (affiliated with the University of Westminster).
+          Passionate about full-stack development, IoT systems, and cybersecurity — building impact-driven
+          tech solutions that bridge hardware and software.
         </p>
 
         <div className="hero-ctas anim-5">
@@ -52,30 +55,38 @@ export default function Home() {
         <div className="status-bar anim-5">
           <div className="status-item">
             <span className="status-dot" />
-            <span>Available for opportunities</span>
+            <span>Available for internships &amp; opportunities</span>
           </div>
         </div>
 
-        <div className="hero-socials anim-5" style={{ marginTop: '2rem', display: 'flex', gap: '1.5rem' }}>
-          <a href="https://github.com/pasantharupathi" target="_blank" rel="noopener noreferrer" className="hero-social-link" style={socialStyle}>
+        <div className="hero-socials anim-5">
+          <a
+            href="https://github.com/pasantharupathi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hero-social-link"
+            aria-label="Visit my GitHub profile"
+          >
             <IconGitHub size={22} />
           </a>
-          <a href="https://www.linkedin.com/in/pasan-tharupathi/" target="_blank" rel="noopener noreferrer" className="hero-social-link" style={socialStyle}>
+          <a
+            href="https://www.linkedin.com/in/pasan-tharupathi/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hero-social-link"
+            aria-label="Visit my LinkedIn profile"
+          >
             <IconLinkedIn size={22} />
           </a>
-          <a href="mailto:pasantharupathi1@gmail.com" className="hero-social-link" style={socialStyle}>
+          <a
+            href="mailto:pasantharupathi1@gmail.com"
+            className="hero-social-link"
+            aria-label="Send me an email"
+          >
             <IconMail size={22} />
           </a>
         </div>
       </div>
     </section>
   )
-}
-
-const socialStyle = {
-  color: 'var(--muted)',
-  transition: 'color 0.2s, filter 0.2s, transform 0.2s',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
 }

@@ -12,15 +12,13 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: RESEND_API_KEY
+        sync: false    # Set manually in Render dashboard (your Resend API key)
       - key: EMAIL_USER
-        sync: false    # Set manually in Render dashboard
-      - key: EMAIL_PASS
-        sync: false    # Set manually in Render dashboard
-      - key: NOTIFY_EMAIL
-        sync: false
+        sync: false    # The email address where contact notifications are delivered
       - key: CLIENT_URL
-        sync: false    # Your Vercel frontend URL
+        sync: false    # Your Vercel frontend URL (e.g. https://your-portfolio.vercel.app)
       - key: GITHUB_USERNAME
         value: pasantharupathi
       - key: GITHUB_TOKEN
-        sync: false    # Optional
+        sync: false    # Optional — increases GitHub API rate limit

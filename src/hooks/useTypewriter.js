@@ -28,7 +28,10 @@ export function useTypewriter(words, {
   const isDeletingRef = useRef(false)
   const displayedRef  = useRef('')
 
-  // Keep displayedRef in sync with state on every render
+  // Keep displayedRef in sync with state on every render.
+  // This is intentional — the ref is read inside setTimeout closures
+  // (not during render), so it is safe to update it here.
+  // eslint-disable-next-line react-hooks/refs
   displayedRef.current = displayed
 
   useEffect(() => {
@@ -77,7 +80,6 @@ export function useTypewriter(words, {
     // or when the words / speed options change
     return () => clearTimeout(timerId)
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [words, typeSpeed, deleteSpeed, pauseAfter, pauseBefore])
   //  ↑ Intentionally omitting `displayed` — we read it via ref to avoid
   //    scheduling a new effect on every single character update.

@@ -19,7 +19,7 @@ const certifications = [
     credentialId: 'CRC-GD-DENUWARA-KANDY',
     skills: ['Graphic Design', 'UI Layouts', 'Visual Design', 'Branding'],
     image: '/graphic_design_badge.png',
-    verifyUrl: '#',
+    verifyUrl: null,
   },
   {
     id: 'java-essential',
@@ -37,11 +37,17 @@ const certifications = [
     title: 'CSS Essential Training (2023)',
     date: 'Jun 03, 2026',
     credentialId: 'f87b3e21fe52ee0738788097d46515d53b28ff068dfefc2f0969e5919faf3535',
-    skills: ['Cascading Style Sheets (CSS)', 'Web Design', 'Responsive Layouts', 'Web Development'],
+    skills: ['CSS3', 'Web Design', 'Responsive Layouts', 'Web Development'],
     image: '/css_badge.jpg',
     verifyUrl: 'https://www.linkedin.com/learning/certificates/f87b3e21fe52ee0738788097d46515d53b28ff068dfefc2f0969e5919faf3535',
   },
 ]
+
+// Show first 12 chars + ellipsis for long hashes; leave short IDs unchanged
+function truncateHash(id) {
+  if (!id || id.length <= 16) return id
+  return `${id.slice(0, 12)}...${id.slice(-4)}`
+}
 
 export default function Certifications() {
   return (
@@ -55,36 +61,38 @@ export default function Certifications() {
       <div className="certs-grid">
         {certifications.map((cert) => (
           <div key={cert.id} className="cert-card glass-card">
-            
+
             {/* Cyberpunk Top Bar */}
             <div className="cert-card-header">
               <span className="cert-badge">SECURITY_CLEARED</span>
-              <div className="project-dots"><span /><span /><span /></div>
+              <div className="project-dots" aria-hidden="true"><span /><span /><span /></div>
             </div>
 
             <div className="cert-card-body">
-              <div className="cert-heading-area" style={{ display: 'flex', gap: '1.2rem', alignItems: 'center', marginBottom: '1.2rem' }}>
-                <img 
-                  src={cert.image} 
-                  alt={cert.title} 
-                  style={{ 
-                    width: '64px', 
-                    height: '64px', 
-                    borderRadius: '4px', 
-                    objectFit: 'cover',
-                    border: '1px solid var(--border)',
-                    boxShadow: '0 0 10px rgba(125,209,231,0.2)' 
-                  }} 
+              <div className="cert-heading-area">
+                <img
+                  src={cert.image}
+                  alt={`${cert.title} badge`}
+                  className="cert-badge-img"
                 />
                 <div>
-                  <div className="cert-issuer" style={{ marginBottom: '0.2rem' }}>// {cert.issuer}</div>
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', lineHeight: '1.3' }}>{cert.title}</h3>
+                  <div className="cert-issuer">// {cert.issuer}</div>
+                  <h3>{cert.title}</h3>
                 </div>
               </div>
-              
+
               <div className="cert-meta">
                 <div>DATE: <span>{cert.date}</span></div>
-                <div>HASH: <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent3)' }}>{cert.credentialId}</span></div>
+                <div>
+                  HASH:{' '}
+                  <span
+                    className="cert-hash"
+                    title={cert.credentialId}
+                    aria-label={`Credential ID: ${cert.credentialId}`}
+                  >
+                    {truncateHash(cert.credentialId)}
+                  </span>
+                </div>
               </div>
 
               <div className="cert-skills">
@@ -93,13 +101,14 @@ export default function Certifications() {
                 ))}
               </div>
 
-              {cert.verifyUrl && cert.verifyUrl !== '#' && (
+              {cert.verifyUrl && (
                 <div style={{ marginTop: 'auto' }}>
-                  <a 
-                    className="project-link" 
-                    href={cert.verifyUrl} 
-                    target="_blank" 
+                  <a
+                    className="project-link"
+                    href={cert.verifyUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={`Verify ${cert.title} credential`}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                   >
                     <IconExternal size={14} /> VERIFY_CREDENTIAL
